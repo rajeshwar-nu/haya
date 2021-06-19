@@ -24,8 +24,8 @@ sync_manager = multiprocessing.Manager()
 get_objects_queue = multiprocessing.Queue(maxsize=GET_OBJECT_QUE_SIZE)
 file_info_dict = sync_manager.dict()
 
-# s3_uri = "s3://commoncrawl/crawl-data/CC-MAIN-2021-25/segments/1623487582767.0/warc/CC-MAIN-20210612103920-20210612133920-00000.warc.gz"
-s3_uri = "s3://tcga-2-open/00072b66-9638-4107-8343-eb46d90bc782/jhu-usc.edu_KIRP.HumanMethylation450.15.lvl-2.TCGA-5P-A9KA-01A-11D-A42K-05.txt"
+s3_uri = "s3://commoncrawl/crawl-data/CC-MAIN-2021-25/segments/1623487582767.0/warc/CC-MAIN-20210612103920-20210612133920-00000.warc.gz"
+# s3_uri = "s3://tcga-2-open/00072b66-9638-4107-8343-eb46d90bc782/jhu-usc.edu_KIRP.HumanMethylation450.15.lvl-2.TCGA-5P-A9KA-01A-11D-A42K-05.txt"
 parsed_url = urlparse(s3_uri)
 bucket_name = parsed_url.netloc
 key = parsed_url.path[1:]
@@ -45,7 +45,8 @@ part_size = GET_OBJECT_CHUNK_SIZE
 
 num_parts = calculate_num_parts(file_size, part_size)
 
-download_path = abspath(f"{file_name}")
+os.makedirs(".out", exist_ok=True)
+download_path = abspath(f".out/{file_name}")
 if os.path.isfile(download_path):
     os.remove(download_path)
 with open(download_path, "wb") as out:
@@ -72,10 +73,10 @@ for i in range(num_parts):
     get_object_task = GetChunkTask(
         file_id=0, start_bytes=i * part_size, range_parameter=range_parameter
     )
-    get_objects_queue.put_nowait(get_object_task)
+    get_objects_queue.put(get_object_task)
 
 for _ in range(N_DOWNLOAD_PROCESSES):
-    get_objects_queue.put_nowait(None)
+    get_objects_queue.put(None)
 
 for p in procs:
     p.join()
