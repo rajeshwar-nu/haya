@@ -1,0 +1,28 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 21.6b0
+    hooks:
+      - id: black
+        exclude: \.git|\.venv|venv
+        language_version: python3.7
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.8.0
+    hooks:
+      - id: isort
+        exclude: \.git|\.venv|venv|app/vendor|api-sdk/api_sdk/vendor
+        language_version: python3.7
+        args: ["-m", "3", "--tc", "-w", "120"]
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        exclude: \.git|\.venv|venv
+        language_version: python3.7
+        additional_dependencies:
+          - flake8-print
+        args: ["--max-line-length=120",
+               "--max-complexity=18",
+               "--exclude=.venv,venv",
+               "--extend-ignore=E203,E266,E501"]
